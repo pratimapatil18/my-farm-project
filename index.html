@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f7ef">
+  <meta name="description" content="Fresh seasonal produce grown on our own farm. Order farm-fresh fruits, vegetables and spices in Panvel and Navi Mumbai.">
+  <title>Pratima’s Farm — A Little Closer to Nature</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="photo-styles.css">
+  <link rel="stylesheet" href="brand-polish.css">
+  <script src="script.js" defer></script>
+  <script type="module" src="firebase-client.js"></script>
+  <script type="module" src="customer-auth.js"></script>
+  <script type="module" src="catalog-sync.js"></script>
+  <script type="module" src="order-recording.js"></script>
+</head>
+<body>
+  <div class="announcement">Grown with care, delivered around Panvel &amp; Navi Mumbai <span>✳</span></div>
+  <header class="site-header">
+    <a class="brand" href="#home" aria-label="Pratima’s Farm home"><img class="brand-logo" src="images/pratimas-farm-logo.png" alt="Farms to Friends of Pratima logo"><span>Pratima’s Farm<small>A LITTLE CLOSER TO NATURE</small></span></a>
+    <nav class="desktop-nav" aria-label="Main navigation"><a href="#shop">Shop</a><a href="#story">Our farm</a><a href="#gallery">Gallery</a><a href="#delivery">Visit us</a></nav>
+    <div class="header-actions"><button class="account-trigger" id="account-trigger">Sign in</button><button class="cart-trigger" id="cart-trigger" aria-label="Open shopping cart">Your basket <span class="cart-count" id="cart-count">0</span></button></div>
+  </header>
+
+  <main id="home">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow"><span class="eyebrow-dot"></span> FROM OUR FARM TO YOUR HOME</span>
+        <h1>Pratima’s Farm<small> — A Little Closer to Nature.</small></h1>
+        <p class="hero-tagline">From Our Farm to Your Home, With Care.</p>
+        <p>Grown with care. Shared with love. From our trees and fields to your family’s table. Every harvest carries a little of our hard work, patience and love for the land.</p>
+        <div class="hero-actions"><a class="button button-dark" href="#shop">Shop Our Harvest <span>↘</span></a><a class="button button-outline" href="#story">Discover Our Farm <span>↘</span></a></div>
+        <div class="hero-note"><span class="note-icon">✳</span><span><strong>Locally grown, thoughtfully picked</strong><small>Serving Panvel &amp; Navi Mumbai</small></span></div>
+      </div>
+      <div class="hero-art">
+        <img class="hero-photo" src="images/enhanced/mangoes-tree.jpg" alt="Close-up of green mangoes growing on a tree at Pratima’s Farm" fetchpriority="high">
+        <div class="hero-photo-shade"></div>
+        <div class="art-caption">Growing at<br><span>Pratima’s Farm</span></div>
+      </div>
+    </section>
+
+    <section class="trust-row" aria-label="Farm values"><div><span>✳</span> Grown on our own farm</div><div><span>⌁</span> Seasonal &amp; fresh</div><div><span>♡</span> Neighbourhood delivery</div></section>
+
+    <section class="shop-section" id="shop">
+      <div class="section-heading"><div><span class="eyebrow">THE GOOD STUFF</span><h2>Shop the harvest</h2></div><p>Fresh picks from our farm, ready for your kitchen.</p></div>
+      <div class="filter-row" id="filters" aria-label="Filter products">
+        <button class="filter-chip active" data-filter="all">Everything</button><button class="filter-chip" data-filter="fruit">Fruit</button><button class="filter-chip" data-filter="vegetable">Vegetables</button><button class="filter-chip" data-filter="spice">Herbs &amp; spices</button>
+      </div>
+      <div class="product-grid" id="product-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="farm-story" id="story"><div class="story-art"><img class="story-photo" src="images/WhatsApp Image 2026-10-12 at 3.45.48 PM.jpeg" alt="Rows of leafy crops growing in the farm field" loading="lazy"><span class="story-stamp">FROM<br>OUR FIELDS</span></div><div class="story-copy"><span class="eyebrow">OUR FARM STORY</span><h2>Good food starts<br>with good roots.</h2><p>At Pratima’s Farm, each tree, season and harvest asks for patience and care. We share what is ready with our neighbours in Panvel and Navi Mumbai, bringing a little of the farm closer to home.</p><a href="#our-care" class="text-link">More than a harvest <span>→</span></a></div></section>
+
+    <section class="love-section" id="our-care">
+      <div class="love-heading"><span class="eyebrow">THE CARE BEHIND THE HARVEST</span><h2>More Than a Harvest.<br>A Labour of Love.</h2><p>Good things take time. Here are a few glimpses of the patience, care and hard work behind each harvest.</p></div>
+      <div class="love-grid">
+        <article class="love-card love-card-feature"><img src="images/WhatsApp Image 2026-10-12 at 3.45.50 PM.jpeg" alt="Mango orchard with fruit carefully covered as it grows" loading="lazy"><div><span class="love-number">01 / PATIENCE</span><h3>Time on the tree</h3><p>Each mango grows at its own pace, watched over through the season.</p></div></article>
+        <article class="love-card"><img src="images/enhanced/banana-plant.jpg" alt="A bunch of bananas growing among the leaves on its plant" loading="lazy"><div><span class="love-number">02 / CARE</span><h3>Tending each plant</h3><p>Steady attention and care help every plant grow through the season.</p></div></article>
+        <article class="love-card"><img src="images/WhatsApp Image 2026-10-12 at 3.45.43 PM (1).jpeg" alt="Fresh green guavas gathered in a bowl" loading="lazy"><div><span class="love-number">03 / HARVEST</span><h3>Picked with care</h3><p>A look at the fruit we gather and share with our neighbours.</p></div></article>
+        <article class="love-card"><img src="images/WhatsApp Image 2026-10-12 at 3.45.44 PM.jpeg" alt="Four watermelons from a farm harvest" loading="lazy"><div><span class="love-number">04 / SEASON</span><h3>What the season brings</h3><p>Every season has its own harvest and its own small surprises.</p></div></article>
+        <article class="love-card"><img src="images/enhanced/turmeric-field.jpg" alt="Rows of leafy turmeric plants growing in the farm field" loading="lazy"><div><span class="love-number">05 / EFFORT</span><h3>Work in every row</h3><p>From tending the field to bringing in the crop, each harvest takes care and effort.</p></div></article>
+        <article class="love-card"><img src="images/WhatsApp Image 2026-10-12 at 3.45.47 PM (1).jpeg" alt="Wide view across the farm fields and surrounding greenery" loading="lazy"><div><span class="love-number">06 / OUR PLACE</span><h3>Life on the farm</h3><p>These fields are where our growing seasons begin, one day at a time.</p></div></article>
+      </div>
+    </section>
+
+    <section class="farm-gallery" id="gallery">
+      <div class="section-heading"><div><span class="eyebrow">A LITTLE LOOK AROUND</span><h2>Life at Pratima’s Farm</h2></div><p>Real moments from the orchard and fields.</p></div>
+      <div class="gallery-grid">
+        <figure class="gallery-card gallery-wide"><img src="images/enhanced/turmeric-field.jpg" alt="Wide turmeric field with green rows and farm trees" loading="lazy"><figcaption>Rows in the turmeric field</figcaption></figure>
+        <figure class="gallery-card"><img src="images/enhanced/mangoes-tree.jpg" alt="Green mangoes growing on a tree branch" loading="lazy"><figcaption>Mangoes growing on the tree</figcaption></figure>
+        <figure class="gallery-card"><img src="images/enhanced/banana-plant.jpg" alt="A bunch of bananas growing on the plant" loading="lazy"><figcaption>Bananas on the plant</figcaption></figure>
+        <figure class="gallery-card"><img src="images/WhatsApp Image 2026-10-12 at 3.45.43 PM (1).jpeg" alt="Fresh green guavas gathered in a bowl" loading="lazy"><figcaption>Guavas from the harvest</figcaption></figure>
+        <figure class="gallery-card gallery-tall"><img src="images/WhatsApp Image 2026-10-12 at 3.45.44 PM.jpeg" alt="Four dark green watermelons together" loading="lazy"><figcaption>Four watermelons from the harvest</figcaption></figure>
+        <figure class="gallery-card gallery-wide"><img src="images/enhanced/farm-landscape.jpg" alt="Farm crops, farmhouse and green hills" loading="lazy"><figcaption>Green hills and fields around the farm · Our farm photo</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="region-section" id="region"><div class="region-photo"><img src="images/enhanced/farm-landscape.jpg" alt="The farm fields and green hills in the Pali–Sudhagad countryside" loading="lazy"></div><div class="region-copy"><span class="eyebrow">ROOTED IN RAIGAD</span><h2>Green hills.<br>Grounded in nature.</h2><p>From the Pali–Sudhagad countryside in Raigad, the landscape around our farm shapes the rhythm of each growing season. This is a view from our own farm.</p><a class="button button-outline" href="https://maps.app.goo.gl/eLynLXARm7XRVVYC8?g_st=iw" target="_blank" rel="noopener noreferrer">Find Our Farm <span>↗</span></a></div></section>
+
+    <section class="glimpse-section" id="farm-video">
+      <div class="glimpse-copy"><span class="eyebrow">A FEW MOMENTS IN THE FIELDS</span><h2>A Glimpse of Pratima’s Farm</h2><p>Take a little walk through the farm and see the place behind the harvest.</p></div>
+      <div class="video-frame">
+        <video id="farm-video-player" controls playsinline preload="metadata" poster="images/enhanced/turmeric-field.jpg" aria-label="A video glimpse of Pratima’s Farm">
+          <source src="images/WhatsApp Video 2026-10-12 at 3.45.48 PM.mp4" type="video/mp4">
+          Your browser cannot play this video. Please try a current version of Safari, Chrome or Firefox.
+        </video>
+        <button class="video-play" id="farm-video-play" type="button" aria-label="Play the Pratima’s Farm video"><span aria-hidden="true">▶</span><span>Play farm video</span></button>
+      </div>
+    </section>
+
+    <section class="flower-section" id="flowers"><div class="section-heading"><div><span class="eyebrow">A LITTLE COLOUR FROM THE GARDEN</span><h2>Nature in Bloom</h2></div><p>Little Moments of Beauty From Our Farm.</p></div><p class="gallery-note">These regional flower photographs are licensed stock images, included as inspiration; they were not taken at our farm.</p><div class="flower-grid">
+      <figure class="gallery-card"><img src="https://images.pexels.com/photos/33155252/pexels-photo-33155252.jpeg?auto=compress&dpr=1&h=750&w=1260" alt="Orange hibiscus blooming among tropical greenery in Kerala, India; stock photo" loading="lazy"><figcaption>Hibiscus in tropical greenery · Stock photo</figcaption></figure>
+      <figure class="gallery-card"><img src="https://images.pexels.com/photos/36340549/pexels-photo-36340549.jpeg?auto=compress&dpr=1&h=750&w=1260" alt="Yellow and orange marigolds in an Indian garden; stock photo" loading="lazy"><figcaption>Seasonal marigolds · Stock photo</figcaption></figure>
+      <figure class="gallery-card"><img src="https://images.pexels.com/photos/38000976/pexels-photo-38000976/free-photo-of-vibrant-pink-roses-in-indian-garden.jpeg?auto=compress&dpr=1&h=750&w=1260" alt="Pink roses blooming in an Indian garden; stock photo" loading="lazy"><figcaption>Garden roses · Stock photo</figcaption></figure>
+      <figure class="gallery-card"><img src="https://images.pexels.com/photos/30439955/pexels-photo-30439955/free-photo-of-vibrant-yellow-rose-bloom-in-indian-garden.jpeg?auto=compress&dpr=1&h=750&w=1260" alt="Yellow rose in a garden in Maharashtra, India; stock photo" loading="lazy"><figcaption>A rose in Maharashtra · Stock photo</figcaption></figure>
+    </div></section>
+
+    <section class="delivery-band" id="delivery"><div class="delivery-icon">⌖</div><div><span class="eyebrow">NEARBY &amp; FRESH</span><h2>In and around Panvel?</h2><p>Send us your basket on WhatsApp and we’ll confirm availability, delivery options and timing.</p></div><div class="delivery-actions"><a class="button button-light" href="#shop">Shop our harvest <span>↗</span></a><a class="button button-outline-light" href="https://maps.app.goo.gl/eLynLXARm7XRVVYC8?g_st=iw" target="_blank" rel="noopener noreferrer">Find Our Farm on Google Maps ↗</a><button class="button button-outline-light" type="button" data-whatsapp-message="Hello Pratima’s Farm, I would like to ask about your produce.">Contact us on WhatsApp</button><button class="visit-link" type="button" data-whatsapp-message="Hello Pratima’s Farm, I would like to ask about visiting the farm.">Ask about visiting the farm →</button></div></section>
+  </main>
+
+  <footer><a class="brand footer-brand" href="#home"><img class="brand-logo" src="images/pratimas-farm-logo.png" alt=""><span>Pratima’s Farm<small>A LITTLE CLOSER TO NATURE</small></span></a><p>From Our Farm to Your Home, With Care.</p><a class="admin-footer-link" href="admin.html">Farm admin</a><span>© <span id="year"></span> Pratima’s Farm</span></footer>
+
+  <div class="lightbox" id="photo-lightbox" role="dialog" aria-modal="true" aria-label="Expanded photograph" hidden><button class="lightbox-close" type="button" aria-label="Close image">×</button><figure><img alt=""><figcaption></figcaption></figure></div>
+
+  <div class="overlay" id="overlay" hidden></div>
+  <aside class="cart-panel" id="cart-panel" aria-label="Shopping basket" aria-hidden="true">
+    <div class="cart-header"><div><span class="eyebrow">YOUR FARM PICKS</span><h2>Your basket <span id="cart-title-count">(0)</span></h2></div><button class="icon-button" id="cart-close" aria-label="Close basket">×</button></div>
+    <div class="cart-items" id="cart-items"></div>
+    <div class="cart-empty" id="cart-empty"><span>🧺</span><h3>Your basket is waiting</h3><p>Add a few fresh picks to get started.</p><button class="text-link" id="continue-shopping">Explore the harvest →</button></div>
+    <div class="cart-bottom" id="cart-bottom"><div class="subtotal"><span>Estimated total</span><strong id="cart-total">₹0</strong></div><p>Final availability and delivery details are confirmed on WhatsApp.</p><button class="button button-whatsapp" id="checkout-start">Continue to checkout <span>→</span></button></div>
+    <section class="checkout-view" id="checkout-view" hidden>
+      <div class="checkout-heading"><button class="back-button" type="button" id="checkout-back">← Basket</button><h2>Checkout</h2><p>Review your basket and tell us where you’d like it.</p></div>
+      <div class="checkout-summary" id="checkout-summary"></div>
+      <form id="checkout-form">
+        <fieldset class="fulfilment-options"><legend>How would you like your order?</legend>
+          <label class="option-card"><input type="radio" name="fulfilment" value="delivery" checked><span><strong>Home delivery</strong><small>Enter your delivery address below</small></span></label>
+          <label class="option-card"><input type="radio" name="fulfilment" value="pickup"><span><strong>Pickup from Pratima’s Farm</strong><small>101, Neel Arcade, Sector 19, Road No. 17, opposite Shiva Complex, New Panvel, Maharashtra, India</small></span></label>
+        </fieldset>
+        <div class="checkout-fields">
+          <label>Customer name<input name="customerName" id="checkout-name" autocomplete="name" required></label>
+          <label>Mobile number<input name="mobile" id="checkout-mobile" type="tel" inputmode="tel" autocomplete="tel" placeholder="10-digit mobile number" pattern="[0-9+() -]{10,16}" required></label>
+          <div class="delivery-fields" id="delivery-fields">
+            <label>Flat / house number<input name="flat" autocomplete="address-line1" required></label>
+            <label>Building / society<input name="building" autocomplete="address-line2" required></label>
+            <label>Area / locality<input name="area" required></label>
+            <div class="field-pair"><label>City<input name="city" autocomplete="address-level2" value="Panvel" required></label><label>PIN code<input name="pin" inputmode="numeric" autocomplete="postal-code" pattern="[0-9]{6}" placeholder="6 digits" required></label></div>
+            <button type="button" class="location-button" id="location-button">⌖ Use My Current Location</button>
+            <p class="location-status" id="location-status" aria-live="polite">Location is optional. You can enter or correct your address manually.</p>
+            <p class="coordinates" id="coordinates" hidden></p>
+          </div>
+          <div class="pickup-address" id="pickup-address" hidden><strong>Pickup address</strong><span>101, Neel Arcade, Sector 19, Road No. 17, opposite Shiva Complex, New Panvel, Maharashtra, India</span></div>
+        </div>
+        <div class="checkout-total"><span>Estimated total</span><strong id="checkout-total">₹0</strong></div>
+        <p class="checkout-note">No delivery fee or minimum order has been added. We’ll confirm availability, timing and any delivery details with you.</p>
+        <button class="button button-whatsapp checkout-submit" type="submit">Confirm on WhatsApp ↗</button>
+        <p id="whatsapp-record-status" class="checkout-note" role="status" aria-live="polite" hidden></p>
+      </form>
+    </section>
+  </aside>
+  <div class="modal-backdrop" id="account-backdrop" hidden>
+    <section class="account-modal" role="dialog" aria-modal="true" aria-labelledby="account-title">
+      <button class="icon-button modal-close" id="account-close" aria-label="Close sign in">×</button>
+      <span class="eyebrow">WELCOME TO PRATIMA’S FARM</span><h2 id="account-title">Your farm account</h2><p class="account-intro">Sign in to your account, or continue browsing and checkout as a guest.</p>
+      <div id="account-signed-in" class="account-signed-in" hidden><p id="account-user-label"></p><button class="button button-outline account-signout" type="button" id="account-signout">Sign out</button></div>
+      <div id="account-auth-controls">
+        <div class="account-tabs"><button class="account-tab active" data-mode="signin" type="button">Sign in</button><button class="account-tab" data-mode="signup" type="button">Create account</button></div>
+        <form id="account-form">
+          <label id="account-name-field" hidden>Your name<input id="account-name" name="name" autocomplete="name"></label>
+          <label>Email address<input id="account-email" name="email" type="email" autocomplete="email" required></label>
+          <label>Password<input id="account-password" name="password" type="password" autocomplete="current-password" minlength="8" required></label>
+          <button class="text-link password-reset" id="password-reset" type="button">Forgot password?</button>
+          <button class="button button-dark account-submit" type="submit" id="account-submit">Sign in</button>
+        </form>
+        <p class="auth-status" id="auth-status" role="status" aria-live="polite"></p>
+        <p class="auth-note">You can shop and send an order on WhatsApp without creating an account. Sign-in requires email/password authentication to be enabled in Firebase Console.</p>
+      </div>
+      <button class="guest-button" id="continue-as-guest" type="button">Continue as guest</button>
+    </section>
+  </div>
+</body>
+</html>

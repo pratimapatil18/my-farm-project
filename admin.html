@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f7ef">
+  <title>Farm Admin — Pratima’s Farm</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="brand-polish.css">
+  <link rel="stylesheet" href="admin.css">
+  <script type="module" src="firebase-client.js"></script>
+  <script type="module" src="admin.js"></script>
+</head>
+<body class="admin-page">
+  <header class="admin-header">
+    <a class="brand" href="index.html"><img class="brand-logo" src="images/pratimas-farm-logo.png" alt=""><span>Pratima’s Farm<small>FARM ADMIN</small></span></a>
+    <a class="admin-back" href="index.html">← Back to shop</a>
+  </header>
+  <main class="admin-main">
+    <section id="admin-login-panel" class="admin-login-panel">
+      <span class="eyebrow">AUTHORISED STAFF ONLY</span>
+      <h1>Farm Admin</h1>
+      <p>Sign in with an administrator account. Customer accounts do not have dashboard access.</p>
+      <form id="admin-login-form">
+        <label>Email address<input id="admin-email" type="email" autocomplete="username" required></label>
+        <label>Password<input id="admin-password" type="password" autocomplete="current-password" required></label>
+        <button class="button button-dark" id="admin-login-button" type="submit">Sign in securely</button>
+      </form>
+      <p id="admin-login-status" class="admin-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="admin-denied-panel" class="admin-denied-panel" hidden>
+      <span class="eyebrow">NO ADMIN ACCESS</span>
+      <h1>This account is not authorised</h1>
+      <p id="admin-denied-message">Only an account granted the admin role by the trusted backend can use this dashboard.</p>
+      <button class="admin-secondary" id="admin-denied-signout" type="button">Sign out</button>
+    </section>
+
+    <section id="admin-dashboard" hidden>
+      <div class="admin-title-row">
+        <div><span class="eyebrow">FARM OPERATIONS</span><h1>Dashboard</h1><p id="admin-current-user" class="small-muted"></p></div>
+        <button class="admin-secondary" id="admin-signout" type="button">Sign out</button>
+      </div>
+      <p class="admin-safety-note"><strong>Sales reporting:</strong> recorded sales are backend-priced order totals that an administrator has marked fulfilled. The website does not verify payment. WhatsApp enquiries and confirmed-but-unfulfilled orders remain estimates and are not counted as sales.</p>
+      <div class="report-toolbar">
+        <label>Report period<select id="report-period"><option value="daily">Daily</option><option value="monthly" selected>Monthly</option><option value="custom">Custom dates</option></select></label>
+        <label>From<input id="report-from" type="date"></label>
+        <label>To<input id="report-to" type="date"></label>
+        <button class="button button-dark" id="report-refresh" type="button">Refresh report</button>
+        <button class="admin-secondary" id="export-report" type="button">Export report CSV</button>
+      </div>
+      <p id="admin-data-status" class="admin-status" role="status" aria-live="polite"></p>
+      <div class="admin-stat-grid" id="admin-stat-grid">
+        <article><span>Orders in period</span><strong id="stat-orders">—</strong></article>
+        <article><span>Recorded sales · fulfilled only</span><strong id="stat-sales">—</strong></article>
+        <article><span>Low stock</span><strong id="stat-low-stock">—</strong></article>
+        <article><span>Out of stock</span><strong id="stat-out-stock">—</strong></article>
+      </div>
+      <p id="stock-unknown-note" class="small-muted"></p>
+
+      <section class="admin-section">
+        <div class="admin-section-head"><div><span class="eyebrow">CATALOGUE CONTROL</span><h2>Inventory</h2></div><button class="admin-secondary" id="new-product" type="button">＋ Add product</button></div>
+        <form id="product-form" class="product-form" hidden>
+          <h3 id="product-form-title">Add product</h3>
+          <input id="product-original-id" type="hidden">
+          <div class="admin-form-grid">
+            <label>Product ID<input id="product-id" pattern="[a-z0-9][a-z0-9-]{0,59}" placeholder="e.g. fresh-guava" required></label>
+            <label>Product name<input id="product-name" maxlength="80" required></label>
+            <label>Category<select id="product-category"><option value="fruit">Fruit</option><option value="spice">Spice</option><option value="vegetable">Vegetable</option></select></label>
+            <label>Price (₹)<input id="product-price" type="number" min="0" max="1000000" step="1" required></label>
+            <label>Unit<input id="product-unit" maxlength="32" placeholder="kg, bunch, piece" required></label>
+            <label>Stock count<input id="product-stock" type="number" min="0" max="1000000" step="1" placeholder="Leave blank if not counted"></label>
+            <label>Low-stock alert at<input id="product-threshold" type="number" min="0" max="100000" step="1" value="5" required></label>
+            <label>Availability<select id="product-availability"><option value="seasonal">Seasonal</option><option value="year-round">Year-round</option><option value="unavailable">Unavailable</option></select></label>
+            <label>Card badge<input id="product-badge" maxlength="28" value="SEASONAL" required></label>
+            <label>Display symbol<input id="product-emoji" maxlength="8" placeholder="🌿"></label>
+            <label>Card colour<input id="product-color" type="color" value="#e8edcf"></label>
+            <label>Image attribution<select id="product-image-source"><option value="farm">Farm photograph</option><option value="stock">Stock photograph</option></select></label>
+            <label>Image path or HTTPS URL<input id="product-image" maxlength="500" placeholder="images/your-photo.jpg"></label>
+            <label>Image description<input id="product-image-alt" maxlength="180"></label>
+          </div>
+          <label class="admin-checkbox"><input id="product-active" type="checkbox" checked> Active in the customer shop</label>
+          <div class="admin-form-actions"><button class="button button-dark" id="product-save" type="submit">Save product</button><button class="admin-secondary" id="product-cancel" type="button">Cancel</button></div>
+        </form>
+        <div class="table-scroll"><table><thead><tr><th>Product</th><th>Price</th><th>Unit</th><th>Stock</th><th>Availability</th><th>State</th><th>Actions</th></tr></thead><tbody id="inventory-rows"></tbody></table></div>
+        <button class="admin-secondary" id="export-inventory" type="button">Export inventory CSV</button>
+      </section>
+
+      <section class="admin-section">
+        <div class="admin-section-head"><div><span class="eyebrow">CUSTOMER REQUESTS</span><h2>WhatsApp enquiries &amp; orders</h2></div></div>
+        <p class="small-muted">A WhatsApp draft record only shows that checkout opened the messaging link. It does not prove the customer sent the message or confirmed the order. Staff must verify an order and mark it fulfilled before its backend-priced total is reported as a recorded sale; payment is not verified by this website.</p>
+        <div class="table-scroll"><table><thead><tr><th>Created</th><th>Customer</th><th>Items</th><th>Estimate</th><th>Fulfilment / address</th><th>Status</th><th>Update</th></tr></thead><tbody id="order-rows"></tbody></table></div>
+      </section>
+
+      <section class="admin-section">
+        <div class="admin-section-head"><div><span class="eyebrow">SALES REPORT</span><h2>Best-selling products</h2></div></div>
+        <p class="small-muted">Based on fulfilled orders in the selected date range.</p>
+        <div class="table-scroll"><table><thead><tr><th>Product</th><th>Quantity sold</th><th>Actual sales</th></tr></thead><tbody id="best-selling-rows"></tbody></table></div>
+      </section>
+    </section>
+  </main>
+</body>
+</html>

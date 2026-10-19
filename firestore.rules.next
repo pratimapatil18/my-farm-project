@@ -1,0 +1,33 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    // Full inventory is private to administrators. The public catalog is a
+    // separate projection and deliberately omits exact stock counts.
+    match /products/{productId} {
+      allow get, list: if isAdmin();
+      allow create, update, delete: if false;
+    }
+
+    match /catalog/{productId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    // Customer contact and address data is private. Admin UI reads orders via
+    // privileged callable functions; direct client writes are never allowed.
+    match /orders/{orderId} {
+      allow get, list: if isAdmin();
+      allow create, update, delete: if false;
+    }
+
+    // Default-deny everything else, including customer profile collections.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs20"
+  },
+  "firestore": {
+    "database": "(default)",
+    "location": "asia-south1",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "firebase.local.json",
+      "firestore.rules.next",
+      "ADMIN_SECURITY_PLAN.md",
+      "tests/**",
+      "functions/**",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
