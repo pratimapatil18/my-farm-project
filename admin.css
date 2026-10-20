@@ -10,7 +10,15 @@
 .admin-login-panel form { display:grid; gap:16px; margin-top:24px; }
 .admin-login-panel label,.admin-form-grid label,.report-toolbar label { display:grid; gap:6px; color:#465447; font-size:12px; font-weight:700; }
 .admin-login-panel input,.admin-form-grid input,.admin-form-grid select,.report-toolbar input,.report-toolbar select { width:100%; min-height:42px; border:1px solid #dfe3d9; border-radius:8px; padding:9px 11px; background:#fff; color:#26372c; font:13px 'DM Sans',Arial,sans-serif; }
+.admin-password-control { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px; }
+.admin-password-control .admin-secondary { min-height:42px; }
+.admin-text-link { justify-self:start; border:0; padding:0; background:transparent; color:#315b3f; font:700 12px 'DM Sans',Arial,sans-serif; text-decoration:underline; cursor:pointer; }
+.admin-text-link:hover { color:#547d50; }
+.admin-text-link:focus-visible,.admin-password-control button:focus-visible { outline:2px solid #547d50; outline-offset:3px; }
 .admin-login-panel .button { width:100%; min-height:44px; }
+.admin-password-form { margin-top:16px; }
+.admin-password-form .button { min-height:42px; align-self:end; }
+.admin-security-section>p { max-width:700px; }
 .admin-status { min-height:1.5em; color:#315b3f; font-size:12px; line-height:1.5; }
 .admin-status[data-kind="error"] { color:#9a4238; }
 .admin-title-row,.admin-section-head { display:flex; justify-content:space-between; align-items:center; gap:15px; }

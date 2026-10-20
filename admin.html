@@ -25,8 +25,14 @@
       <h1>Farm Admin</h1>
       <p>Sign in with an administrator account. Customer accounts do not have dashboard access.</p>
       <form id="admin-login-form">
-        <label>Email address<input id="admin-email" type="email" autocomplete="username" required></label>
-        <label>Password<input id="admin-password" type="password" autocomplete="current-password" required></label>
+        <label for="admin-email">Email address</label>
+        <input id="admin-email" type="email" autocomplete="username" required>
+        <label for="admin-password">Password</label>
+        <div class="admin-password-control">
+          <input id="admin-password" type="password" autocomplete="current-password" required>
+          <button class="admin-secondary" id="admin-password-toggle" type="button" aria-controls="admin-password" aria-pressed="false">Show</button>
+        </div>
+        <button class="admin-text-link" id="admin-password-reset" type="button">Forgot password?</button>
         <button class="button button-dark" id="admin-login-button" type="submit">Sign in securely</button>
       </form>
       <p id="admin-login-status" class="admin-status" role="status" aria-live="polite"></p>
@@ -44,6 +50,17 @@
         <div><span class="eyebrow">FARM OPERATIONS</span><h1>Dashboard</h1><p id="admin-current-user" class="small-muted"></p></div>
         <button class="admin-secondary" id="admin-signout" type="button">Sign out</button>
       </div>
+      <section class="admin-section admin-security-section">
+        <div class="admin-section-head"><div><span class="eyebrow">ACCOUNT SECURITY</span><h2>Account password</h2></div><button class="admin-secondary" id="admin-change-password-toggle" type="button" aria-expanded="false" aria-controls="admin-change-password-form">Change password</button></div>
+        <p class="small-muted">Enter your current password to verify it, then choose a new password with at least 8 characters.</p>
+        <form class="admin-form-grid admin-password-form" id="admin-change-password-form" hidden>
+          <label for="admin-current-password">Current password<input id="admin-current-password" type="password" autocomplete="current-password" required></label>
+          <label for="admin-new-password">New password<input id="admin-new-password" type="password" autocomplete="new-password" minlength="8" required></label>
+          <label for="admin-confirm-password">Confirm new password<input id="admin-confirm-password" type="password" autocomplete="new-password" minlength="8" required></label>
+          <button class="button button-dark" id="admin-change-password-button" type="submit">Update password</button>
+        </form>
+        <p class="admin-status" id="admin-password-status" role="status" aria-live="polite"></p>
+      </section>
       <p class="admin-safety-note"><strong>Sales reporting:</strong> recorded sales are backend-priced order totals that an administrator has marked fulfilled. The website does not verify payment. WhatsApp enquiries and confirmed-but-unfulfilled orders remain estimates and are not counted as sales.</p>
       <div class="report-toolbar">
         <label>Report period<select id="report-period"><option value="daily">Daily</option><option value="monthly" selected>Monthly</option><option value="custom">Custom dates</option></select></label>

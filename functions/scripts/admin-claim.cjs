@@ -14,7 +14,11 @@ async function main() {
     throw new Error("Usage: node scripts/admin-claim.cjs <grant|revoke> <admin-email>");
   }
   if (emulatorMode) {
-    process.env.FIREBASE_AUTH_EMULATOR_HOST ||= "127.0.0.1:9099";
+    const configuredHost = process.env.FIREBASE_AUTH_EMULATOR_HOST;
+    if (configuredHost && configuredHost !== "127.0.0.1:9099") {
+      throw new Error("Refusing emulator mode because FIREBASE_AUTH_EMULATOR_HOST is not 127.0.0.1:9099.");
+    }
+    process.env.FIREBASE_AUTH_EMULATOR_HOST = "127.0.0.1:9099";
   } else if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
     console.warn("This uses Application Default Credentials. Run gcloud auth application-default login first. Never put a service-account key in the website.");
   }

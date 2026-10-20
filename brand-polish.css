@@ -218,6 +218,9 @@ body.lightbox-open { overflow: hidden; }
 .video-play:hover { background: rgb(20 34 24 / 23%); }
 .video-play[hidden] { display: none; }
 .video-play span:first-child { display: grid; place-items: center; width: 62px; height: 62px; padding-left: 4px; border: 1px solid rgb(255 255 255 / 75%); border-radius: 50%; background: rgb(255 253 247 / 92%); color: var(--green); font-size: 18px; box-shadow: 0 7px 22px rgb(0 0 0 / 18%); }
+.admin-login-link { display: inline-flex; align-items: center; justify-content: center; padding: 9px 13px; border: 1px solid var(--line); border-radius: 30px; color: var(--green); font-size: 12px; font-weight: 700; text-decoration: none; white-space: nowrap; transition: background .18s, border-color .18s; }
+.admin-login-link:hover { background: #f2f5e9; border-color: #d4ddca; }
+.admin-login-link:focus-visible, .account-trigger:focus-visible { outline: 2px solid var(--green2); outline-offset: 3px; }
 @media (max-width: 800px) {
   .product-visual { height: 185px; }
   .love-card-feature { grid-column: auto; display: block; }
@@ -226,6 +229,10 @@ body.lightbox-open { overflow: hidden; }
   .glimpse-section { grid-template-columns: 1fr; gap: 18px; padding: 62px 6%; }
 }
 @media (max-width: 600px) {
+  .header-actions { gap: 2px; }
+  .account-trigger { padding: 8px 5px; font-size: 10px; white-space: nowrap; }
+  .admin-login-link { padding: 7px 8px; font-size: 10px; }
+  .cart-trigger { padding: 7px 8px; white-space: nowrap; }
   .hero-actions { margin-top: 18px; }
   .hero-actions .button { width: 100%; justify-content: space-between; }
   .product-visual { height: clamp(145px, 46vw, 190px); }
@@ -233,4 +240,15 @@ body.lightbox-open { overflow: hidden; }
   .video-frame { border-width: 4px; border-radius: 13px; }
   .video-play { bottom: 38px; }
   .video-play span:first-child { width: 52px; height: 52px; }
+}
+@media (max-width: 380px) {
+  .site-header { padding-right: 3%; padding-left: 3%; }
+  .brand { gap: 6px; font-size: 16px; }
+  .brand-logo { width: 38px; height: 38px; }
+  .brand small { font-size: 6px; }
+  .header-actions { gap: 0; }
+  .account-trigger { padding-right: 3px; padding-left: 3px; font-size: 9px; }
+  .admin-login-link { padding: 6px 5px; font-size: 9px; }
+  .cart-trigger { padding: 6px 6px; font-size: 9px; }
+  .cart-count { min-width: 18px; height: 18px; margin-left: 3px; font-size: 10px; }
 }

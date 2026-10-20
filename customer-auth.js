@@ -77,7 +77,7 @@ function setMode(nextMode) {
 function renderAuthState(user) {
   const trigger = document.querySelector("#account-trigger");
   window.firebaseCustomerProfile = user ? { name: user.displayName || "" } : null;
-  trigger.textContent = user ? (user.displayName?.split(/\s+/)[0] || "Account") : "Sign in";
+  trigger.textContent = user ? (user.displayName?.split(/\s+/)[0] || "Account") : "Client Login";
   accountControls.hidden = Boolean(user);
   signedInPanel.hidden = !user;
   document.querySelector("#account-user-label").textContent = user

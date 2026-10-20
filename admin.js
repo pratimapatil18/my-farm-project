@@ -1,6 +1,6 @@
 import "./firebase-client.js";
 import {downloadCsv} from "./admin-report-utils.js";
-import {getIdTokenResult, onAuthStateChanged, signInWithEmailAndPassword, signOut} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import {EmailAuthProvider, getIdTokenResult, onAuthStateChanged, reauthenticateWithCredential, sendPasswordResetEmail, signInWithEmailAndPassword, signOut, updatePassword} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import {connectFunctionsEmulator, getFunctions, httpsCallable} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-functions.js";
 
 const $ = selector => document.querySelector(selector);
@@ -14,6 +14,9 @@ const dataStatus = $("#admin-data-status");
 const inventoryRows = $("#inventory-rows");
 const orderRows = $("#order-rows");
 const form = $("#product-form");
+const adminPassword = $("#admin-password");
+const changePasswordForm = $("#admin-change-password-form");
+const changePasswordToggle = $("#admin-change-password-toggle");
 let auth;
 let functions;
 let dashboardCall;
@@ -25,6 +28,14 @@ let activeAdminUid = null;
 function setStatus(element, message, kind = "info") {
   element.textContent = message;
   element.dataset.kind = kind;
+}
+
+function closePasswordChangeForm({clearStatus = false, reset = false} = {}) {
+  changePasswordForm.hidden = true;
+  changePasswordToggle.textContent = "Change password";
+  changePasswordToggle.setAttribute("aria-expanded", "false");
+  if (reset) changePasswordForm.reset();
+  if (clearStatus) setStatus($("#admin-password-status"), "");
 }
 
 function escapeHtml(value) {
@@ -69,6 +80,7 @@ function setPeriod(period) {
 }
 
 function setLoggedOut(message = "") {
+  closePasswordChangeForm({clearStatus:true, reset:true});
   loginPanel.hidden = false;
   deniedPanel.hidden = true;
   dashboard.hidden = true;
@@ -195,6 +207,7 @@ async function activateAdmin(user) {
     showDenied("This account is a customer or has not received the server-controlled admin claim. No admin data was loaded.");
     return false;
   }
+  closePasswordChangeForm({clearStatus:true, reset:true});
   if (activeAdminUid === user.uid) return true;
   activeAdminUid = user.uid;
   dashboard.hidden = false;
@@ -238,6 +251,111 @@ $("#admin-login-form").addEventListener("submit", async event => {
     await activateAdmin(credential.user);
   } catch (error) {
     setStatus(loginStatus, reportError(error), "error");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+$("#admin-password-toggle").addEventListener("click", event => {
+  const button = event.currentTarget;
+  const showingPassword = adminPassword.type === "password";
+  adminPassword.type = showingPassword ? "text" : "password";
+  button.textContent = showingPassword ? "Hide" : "Show";
+  button.setAttribute("aria-pressed", String(showingPassword));
+  button.setAttribute("aria-label", `${showingPassword ? "Hide" : "Show"} admin password`);
+});
+
+$("#admin-password-reset").addEventListener("click", async event => {
+  const button = event.currentTarget;
+  const emailInput = $("#admin-email");
+  const email = emailInput.value.trim();
+  if (!email) {
+    setStatus(loginStatus, "Enter your admin email address first.", "error");
+    emailInput.focus();
+    return;
+  }
+  if (!emailInput.checkValidity()) {
+    emailInput.reportValidity();
+    return;
+  }
+  if (!auth) {
+    setStatus(loginStatus, isLocal ? "Firebase is not ready. Confirm the local Auth Emulator is running and open this page with ?emulator=1." : "Firebase Authentication is not ready. Please try again.", "error");
+    return;
+  }
+
+  button.disabled = true;
+  setStatus(loginStatus, "Requesting a password reset…");
+  try {
+    await sendPasswordResetEmail(auth, email);
+    setStatus(loginStatus, emulatorMode
+      ? "Reset request accepted by the local Auth Emulator. No email was sent; check the Emulator UI or Auth Emulator out-of-band codes."
+      : "If an account uses this email, Firebase will send password reset instructions. Check your inbox and spam folder.");
+  } catch (error) {
+    const messages = {
+      "auth/invalid-email": "Enter a valid email address.",
+      "auth/operation-not-allowed": "Password reset is not enabled for this Firebase Authentication project.",
+      "auth/too-many-requests": "Too many reset attempts. Wait a while and try again.",
+      "auth/network-request-failed": "Could not reach Firebase. Check your connection and try again."
+    };
+    const message = messages[error?.code] || `Password reset could not be requested${error?.code ? ` (${error.code})` : ""}. Please try again.`;
+    setStatus(loginStatus, message, "error");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+changePasswordToggle.addEventListener("click", () => {
+  const opening = changePasswordForm.hidden;
+  changePasswordForm.hidden = !opening;
+  changePasswordToggle.textContent = opening ? "Cancel" : "Change password";
+  changePasswordToggle.setAttribute("aria-expanded", String(opening));
+  if (opening) {
+    setStatus($("#admin-password-status"), "");
+    $("#admin-current-password").focus();
+  }
+});
+
+changePasswordForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  const user = auth?.currentUser;
+  const status = $("#admin-password-status");
+  const button = $("#admin-change-password-button");
+  const currentPassword = $("#admin-current-password").value;
+  const newPassword = $("#admin-new-password").value;
+  const confirmPassword = $("#admin-confirm-password").value;
+
+  if (!user || user.email == null) {
+    setStatus(status, "Your admin session is no longer available. Sign in again and retry.", "error");
+    return;
+  }
+  if (newPassword.length < 8) {
+    setStatus(status, "Choose a new password with at least 8 characters.", "error");
+    return;
+  }
+  if (newPassword !== confirmPassword) {
+    setStatus(status, "The new password and confirmation do not match.", "error");
+    return;
+  }
+
+  button.disabled = true;
+  setStatus(status, "Verifying your current password…");
+  try {
+    const credential = EmailAuthProvider.credential(user.email, currentPassword);
+    await reauthenticateWithCredential(user, credential);
+    await updatePassword(user, newPassword);
+    changePasswordForm.reset();
+    setStatus(status, "Your password was updated successfully.");
+    closePasswordChangeForm();
+  } catch (error) {
+    const messages = {
+      "auth/wrong-password": "The current password is incorrect. Please try again.",
+      "auth/invalid-credential": "The current password is incorrect. Please try again.",
+      "auth/weak-password": "Choose a stronger password with at least 8 characters.",
+      "auth/requires-recent-login": "For your security, sign out and sign in again before changing your password.",
+      "auth/too-many-requests": "Too many attempts. Wait a while and try again.",
+      "auth/network-request-failed": "Could not reach Firebase. Check your connection and try again."
+    };
+    setStatus(status, messages[error?.code] || `Password could not be changed${error?.code ? ` (${error.code})` : ""}. Please try again.`, "error");
   } finally {
     button.disabled = false;
   }

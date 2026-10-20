@@ -21,6 +21,12 @@ const cart = new Map();
 const productGrid = document.querySelector("#product-grid");
 const cartPanel = document.querySelector("#cart-panel");
 const overlay = document.querySelector("#overlay");
+const adminLoginLink = document.querySelector(".admin-login-link");
+const isLocalEmulatorPreview = ["localhost", "127.0.0.1"].includes(window.location.hostname)
+  && new URLSearchParams(window.location.search).get("emulator") === "1";
+if (adminLoginLink && isLocalEmulatorPreview) {
+  adminLoginLink.href = "admin.html?emulator=1";
+}
 const rupees = new Intl.NumberFormat("en-IN", {style:"currency",currency:"INR",maximumFractionDigits:0});
 const pickupAddress = "101, Neel Arcade, Sector 19, Road No. 17, opposite Shiva Complex, New Panvel, Maharashtra, India";
 let coordinates = null;

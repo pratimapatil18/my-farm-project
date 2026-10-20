@@ -4,7 +4,9 @@ import assert from "node:assert/strict";
 import {initializeTestEnvironment, assertFails, assertSucceeds} from "@firebase/rules-unit-testing";
 import {collection, doc, getDoc, getDocs, query, setDoc, where} from "firebase/firestore";
 
-const projectId = "my-farm-project-83386";
+// Keep destructive clearFirestore() setup isolated from the local farm project
+// data when these tests run against an already-started Firestore emulator.
+const projectId = "my-farm-project-83386-rules-tests";
 let testEnv;
 
 before(async () => {
