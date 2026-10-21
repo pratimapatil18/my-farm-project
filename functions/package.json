@@ -6,12 +6,12 @@
     "node": "20"
   },
   "scripts": {
-    "emulate": "XDG_CONFIG_HOME=../.firebase-cli-config firebase emulators:start --config ../firebase.local.json --only auth,firestore,functions",
+    "emulate": "FIREBASE_DEBUG_MODE=true FIREBASE_DEBUG_FEATURES='{\"skipTokenVerification\":true}' XDG_CONFIG_HOME=../.firebase-cli-config firebase emulators:start --config ../firebase.local.json --only auth,firestore,functions",
     "test:rules": "XDG_CONFIG_HOME=../.firebase-cli-config firebase emulators:exec --config ../firebase.local.json --only firestore \"node --test test/firestore.rules.test.mjs\"",
-    "test:emulator": "XDG_CONFIG_HOME=../.firebase-cli-config firebase emulators:exec --config ../firebase.local.json --only auth,firestore,functions \"node --test --test-concurrency=1 test/firestore.rules.test.mjs test/admin.integration.test.mjs test/admin-csv.test.mjs\"",
+    "test:emulator": "FIREBASE_DEBUG_MODE=true FIREBASE_DEBUG_FEATURES='{\"skipTokenVerification\":true}' XDG_CONFIG_HOME=../.firebase-cli-config firebase emulators:exec --config ../firebase.local.json --only auth,firestore,functions \"node --test --test-concurrency=1 test/firestore.rules.test.mjs test/admin.integration.test.mjs test/admin-csv.test.mjs test/safety-scripts.test.mjs test/app-check-client.test.mjs\"",
     "seed:catalog": "node scripts/seed-catalog.cjs --emulator",
-    "admin:grant": "node scripts/admin-claim.cjs grant",
-    "admin:revoke": "node scripts/admin-claim.cjs revoke"
+    "admin:grant": "node scripts/admin-claim.cjs grant --emulator",
+    "admin:revoke": "node scripts/admin-claim.cjs revoke --emulator"
   },
   "dependencies": {
     "firebase-admin": "^13.0.0",

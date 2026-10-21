@@ -13,6 +13,8 @@ import {
 const form = document.querySelector("#account-form");
 const backdrop = document.querySelector("#account-backdrop");
 const status = document.querySelector("#auth-status");
+const localHost = ["localhost", "127.0.0.1"].includes(location.hostname);
+const emulatorMode = localHost && new URLSearchParams(location.search).get("emulator") === "1";
 const emailInput = document.querySelector("#account-email");
 const passwordInput = document.querySelector("#account-password");
 const nameInput = document.querySelector("#account-name");
@@ -203,12 +205,13 @@ document.querySelector("#account-close").addEventListener("click", () => setStat
 document.querySelector("#continue-as-guest").addEventListener("click", () => setStatus(""));
 
 const clientResult = await window.firebaseClientReady;
+setMode("signin");
 if (clientResult.status === "ready") {
   auth = clientResult.auth;
   onAuthStateChanged(auth, renderAuthState, error => setStatus(describeAuthError(error), "error"));
 } else {
   renderAuthState(null);
-  setStatus("Firebase did not initialize. Check the browser console and open this site over localhost or HTTPS.", "error");
+  setStatus(localHost && !emulatorMode
+    ? "Local preview is not connected to production Firebase. Start the emulators and open this page with ?emulator=1 to test sign-in."
+    : "Firebase did not initialize. Check the browser console and open this site over localhost or HTTPS.", "error");
 }
-
-setMode("signin");

@@ -10,10 +10,14 @@ const {FieldValue, getFirestore} = require("firebase-admin/firestore");
 const projectId = "my-farm-project-83386";
 const sourcePath = path.resolve(__dirname, "../../script.js");
 const source = fs.readFileSync(sourcePath, "utf8");
-if (!process.argv.includes("--emulator")) {
+const seedArgs = process.argv.slice(2);
+if (seedArgs.length !== 1 || seedArgs[0] !== "--emulator") {
   throw new Error("Live catalog seeding is disabled in this project script. Use the Firestore emulator only.");
 }
-process.env.FIRESTORE_EMULATOR_HOST ||= "127.0.0.1:8080";
+if (process.env.FIRESTORE_EMULATOR_HOST && process.env.FIRESTORE_EMULATOR_HOST !== "127.0.0.1:8080") {
+  throw new Error("Refusing to seed: FIRESTORE_EMULATOR_HOST must be exactly 127.0.0.1:8080.");
+}
+process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
 const declaration = source.match(/(?:const|let)\s+products\s*=\s*\[/);
 const start = declaration ? declaration.index : -1;
 const end = source.indexOf("\n];", start);
@@ -30,6 +34,10 @@ async function main() {
   initializeApp({projectId});
   const db = getFirestore();
   const batch = db.batch();
+  batch.set(db.collection("system").doc("publicCatalog"), {
+    ready: false,
+    updatedAt: FieldValue.serverTimestamp()
+  });
   for (const product of sandbox.catalog) {
     const availability = /SEASONAL|IN SEASON/i.test(product.badge) ? "seasonal" : "year-round";
     const record = {
@@ -41,14 +49,24 @@ async function main() {
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp()
     };
-    batch.set(db.collection("products").doc(product.id), {
-      ...record
-    }, {merge: true});
+    batch.set(db.collection("products").doc(product.id), record);
     const {stockQuantity, lowStockThreshold, createdAt, ...publicFields} = record;
     batch.set(db.collection("catalog").doc(product.id), {
-      ...publicFields,
-      inStock: true
-    }, {merge: true});
+      name: publicFields.name,
+      category: publicFields.category,
+      price: publicFields.price,
+      unit: publicFields.unit,
+      emoji: publicFields.emoji,
+      image: publicFields.image || "",
+      imageAlt: publicFields.imageAlt || "",
+      imageSource: publicFields.imageSource || "farm",
+      color: publicFields.color || "#e8edcf",
+      badge: publicFields.badge || "SEASONAL",
+      active: true,
+      inStock: true,
+      seasonalAvailability: availability,
+      updatedAt: FieldValue.serverTimestamp()
+    });
   }
   await batch.commit();
   console.log(`Seeded ${sandbox.catalog.length} existing products. Stock is marked unknown until the admin counts it.`);

@@ -5,7 +5,7 @@ const local = ["localhost", "127.0.0.1"].includes(location.hostname);
 const emulatorMode = local && new URLSearchParams(location.search).get("emulator") === "1";
 const client = await window.firebaseClientReady;
 
-if (client.status === "ready" && (!local || emulatorMode)) {
+if (client.status === "ready" && client.appCheck && (!local || emulatorMode)) {
   const functions = getFunctions(client.app, "asia-south1");
   if (emulatorMode) connectFunctionsEmulator(functions, "127.0.0.1", 5001);
   const createEnquiry = httpsCallable(functions, "recordWhatsAppEnquiry");

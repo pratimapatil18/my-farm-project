@@ -1,19 +1,48 @@
 const {initializeApp} = require("firebase-admin/app");
 const {FieldValue, Timestamp, getFirestore} = require("firebase-admin/firestore");
+const {getAuth} = require("firebase-admin/auth");
+const {createHash} = require("node:crypto");
 const {onCall, HttpsError} = require("firebase-functions/v2/https");
 
 initializeApp({projectId: "my-farm-project-83386"});
 const db = getFirestore();
+const auth = getAuth();
 const REGION = "asia-south1";
 const MAX_REPORT_ORDERS = 1000;
 const allowedFulfilments = new Set(["delivery", "pickup"]);
 const allowedNextStatus = new Set(["confirmed", "fulfilled", "cancelled"]);
+const ENQUIRY_WINDOW_MS = 60 * 1000;
+const ENQUIRY_MAX_PER_IP = 20;
 
-function adminOnly(request) {
+async function adminOnly(request) {
   if (!request.auth) throw new HttpsError("unauthenticated", "Sign in to continue.");
   if (request.auth.token.admin !== true) {
     throw new HttpsError("permission-denied", "This action is restricted to an authorised farm administrator.");
   }
+  // Token claims can remain cached after revocation. Check the current server-side
+  // user record on every privileged call so revoked/disabled admins lose access now.
+  const currentUser = await auth.getUser(request.auth.uid);
+  if (currentUser.disabled || currentUser.customClaims?.admin !== true) {
+    throw new HttpsError("permission-denied", "This account is not currently authorised as an administrator.");
+  }
+}
+
+async function limitPublicEnquiry(request) {
+  const address = request.rawRequest?.ip || request.rawRequest?.socket?.remoteAddress || "unknown";
+  const appId = request.app?.appId || "unknown-app";
+  const key = createHash("sha256").update(`${appId}:${address}`).digest("hex");
+  const ref = db.collection("_functionRateLimits").doc(`whatsapp-${key}`);
+  const now = Date.now();
+  await db.runTransaction(async transaction => {
+    const snapshot = await transaction.get(ref);
+    const previous = snapshot.exists ? snapshot.data() : {};
+    const windowStart = Number(previous.windowStart) || now;
+    const count = now - windowStart >= ENQUIRY_WINDOW_MS ? 0 : Number(previous.count) || 0;
+    if (count >= ENQUIRY_MAX_PER_IP) {
+      throw new HttpsError("resource-exhausted", "Too many enquiries from this network. Please wait a minute and try again.");
+    }
+    transaction.set(ref, {windowStart: count === 0 ? now : windowStart, count: count + 1});
+  });
 }
 
 function requiredText(value, label, max = 160) {
@@ -119,7 +148,8 @@ function publicCatalogRecord(product) {
   };
 }
 
-exports.recordWhatsAppEnquiry = onCall({region: REGION, maxInstances: 5}, async request => {
+exports.recordWhatsAppEnquiry = onCall({region: REGION, maxInstances: 5, enforceAppCheck: true}, async request => {
+  await limitPublicEnquiry(request);
   const data = request.data || {};
   const customerName = requiredText(data.customerName, "Customer name", 100);
   const mobile = requiredText(data.mobile, "Mobile number", 24);
@@ -171,20 +201,29 @@ exports.recordWhatsAppEnquiry = onCall({region: REGION, maxInstances: 5}, async 
 });
 
 exports.adminGetDashboard = onCall({region: REGION, maxInstances: 5}, async request => {
-  adminOnly(request);
+  await adminOnly(request);
   const data = request.data || {};
   const start = parseDate(data.startDate);
   const end = parseDate(data.endDate, true);
   if (start && end && start.toMillis() >= end.toMillis()) throw new HttpsError("invalid-argument", "End date must be on or after the start date.");
+  // The order table uses creation-date filtering; recorded sales use the date the
+  // order was actually fulfilled, which can be later than the enquiry date.
   let query = db.collection("orders").orderBy("createdAt", "desc");
   if (start) query = query.where("createdAt", ">=", start);
   if (end) query = query.where("createdAt", "<", end);
-  const [orderSnapshot, productSnapshot] = await Promise.all([
+  let fulfilledQuery = db.collection("orders").where("status", "==", "fulfilled").orderBy("fulfilledAt", "desc");
+  if (start) fulfilledQuery = fulfilledQuery.where("fulfilledAt", ">=", start);
+  if (end) fulfilledQuery = fulfilledQuery.where("fulfilledAt", "<", end);
+  const [orderSnapshot, productSnapshot, fulfilledSnapshot] = await Promise.all([
     query.limit(MAX_REPORT_ORDERS + 1).get(),
-    db.collection("products").get()
+    db.collection("products").get(),
+    fulfilledQuery.limit(MAX_REPORT_ORDERS + 1).get()
   ]);
   if (orderSnapshot.size > MAX_REPORT_ORDERS) {
     throw new HttpsError("resource-exhausted", "This report has more than 1,000 orders. Add paginated reports before using this dataset.");
+  }
+  if (fulfilledSnapshot.size > MAX_REPORT_ORDERS) {
+    throw new HttpsError("resource-exhausted", "This report has more than 1,000 fulfilled orders. Add paginated reports before using this dataset.");
   }
   const toPlain = doc => Object.fromEntries(Object.entries(doc.data()).map(([key, value]) => [
     key,
@@ -192,7 +231,7 @@ exports.adminGetDashboard = onCall({region: REGION, maxInstances: 5}, async requ
   ]).concat([["id", doc.id]]));
   const orders = orderSnapshot.docs.map(toPlain);
   const products = productSnapshot.docs.map(toPlain);
-  const completed = orders.filter(order => order.status === "fulfilled");
+  const completed = fulfilledSnapshot.docs.map(toPlain);
   const bestSelling = new Map();
   for (const order of completed) for (const item of order.items || []) {
     const row = bestSelling.get(item.productId) || {productId: item.productId, name: item.name, quantity: 0, sales: 0};
@@ -221,20 +260,58 @@ exports.adminGetDashboard = onCall({region: REGION, maxInstances: 5}, async requ
 });
 
 exports.adminSaveProduct = onCall({region: REGION, maxInstances: 5}, async request => {
-  adminOnly(request);
+  await adminOnly(request);
   const product = validateProduct(request.data || {});
   const {id, ...record} = product;
   const batch = db.batch();
   batch.set(db.collection("products").doc(id), record, {merge: true});
-  batch.set(db.collection("catalog").doc(id), publicCatalogRecord(product), {merge: true});
+  batch.set(db.collection("catalog").doc(id), publicCatalogRecord(product));
   await batch.commit();
   const response = {...record};
   delete response.updatedAt;
   return {id, ...response};
 });
 
+// One-time admin migration for legacy catalogue projection documents. It writes
+// only known public fields and hides orphan projections with no inventory source.
+exports.adminRefreshPublicCatalog = onCall({region: REGION, maxInstances: 2}, async request => {
+  await adminOnly(request);
+  // Close public catalogue reads before starting a potentially multi-batch
+  // migration. If the migration stops midway, it remains closed until retried.
+  await db.collection("system").doc("publicCatalog").set({ready: false, updatedAt: FieldValue.serverTimestamp()});
+  const [productSnapshot, catalogSnapshot] = await Promise.all([
+    db.collection("products").get(),
+    db.collection("catalog").get()
+  ]);
+  const productsById = new Map(productSnapshot.docs.map(doc => [doc.id, doc.data()]));
+  const publicFields = ["name", "category", "price", "unit", "emoji", "image", "imageAlt", "imageSource", "color", "badge", "active", "inStock", "seasonalAvailability"];
+  const catalogById = new Map(catalogSnapshot.docs.map(doc => [doc.id, doc.data()]));
+  const ids = new Set([...productsById.keys(), ...catalogById.keys()]);
+  const operations = [...ids].map(id => {
+    const product = productsById.get(id);
+    const existing = catalogById.get(id) || {};
+    const data = product ? publicCatalogRecord(product) : Object.fromEntries(publicFields
+      .filter(field => field in existing)
+      .map(field => [field, existing[field]]));
+    if (!product) data.active = false;
+    data.updatedAt = FieldValue.serverTimestamp();
+    return {ref: db.collection("catalog").doc(id), data};
+  });
+  for (let offset = 0; offset < operations.length; offset += 450) {
+    const batch = db.batch();
+    for (const operation of operations.slice(offset, offset + 450)) batch.set(operation.ref, operation.data);
+    await batch.commit();
+  }
+  await db.collection("system").doc("publicCatalog").set({
+    ready: true,
+    updatedAt: FieldValue.serverTimestamp(),
+    productCount: productSnapshot.size
+  });
+  return {updated: productSnapshot.size, sanitizedLegacy: catalogSnapshot.size};
+});
+
 exports.adminSetOrderStatus = onCall({region: REGION, maxInstances: 5}, async request => {
-  adminOnly(request);
+  await adminOnly(request);
   const {orderId, status} = request.data || {};
   if (typeof orderId !== "string" || !/^[A-Za-z0-9_-]{16,40}$/.test(orderId)) throw new HttpsError("invalid-argument", "Order ID is invalid.");
   if (!allowedNextStatus.has(status)) throw new HttpsError("invalid-argument", "Choose confirmed, fulfilled or cancelled.");
@@ -266,10 +343,9 @@ exports.adminSetOrderStatus = onCall({region: REGION, maxInstances: 5}, async re
         if (Number.isSafeInteger(product?.stockQuantity)) {
           const nextStock = product.stockQuantity - order.items[index].quantity;
           transaction.update(productRefs[index], {stockQuantity: nextStock, updatedAt: FieldValue.serverTimestamp()});
-          transaction.set(db.collection("catalog").doc(order.items[index].productId), {
-            inStock: nextStock > 0,
-            updatedAt: FieldValue.serverTimestamp()
-          }, {merge:true});
+          transaction.set(db.collection("catalog").doc(order.items[index].productId), publicCatalogRecord({
+            ...product, stockQuantity: nextStock
+          }));
         }
       }
     }

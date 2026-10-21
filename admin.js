@@ -448,9 +448,9 @@ $("#export-inventory").addEventListener("click", () => {
 
 const clientResult = await window.firebaseClientReady;
 if (clientResult.status !== "ready") {
-  setStatus(loginStatus, "Firebase did not initialize. Open the local Firebase check page first.", "error");
-} else if (isLocal && !emulatorMode) {
-  setStatus(loginStatus, "Local admin access is disabled unless you start the Firebase emulators and open this page with ?emulator=1.", "error");
+  setStatus(loginStatus, isLocal && !emulatorMode
+    ? "Local admin sign-in is disabled to protect production. Start the emulators and open admin.html?emulator=1 to test locally."
+    : "Firebase did not initialize. Check the browser console and try again.", "error");
 } else {
   auth = clientResult.auth;
   localFunctionsReady(clientResult.app);

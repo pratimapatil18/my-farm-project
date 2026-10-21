@@ -2,27 +2,36 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isAdmin() {
-      return request.auth != null && request.auth.token.admin == true;
+    function publicCatalogReady() {
+      return exists(/databases/$(database)/documents/system/publicCatalog)
+        && get(/databases/$(database)/documents/system/publicCatalog).data.ready == true;
     }
 
-    // Full inventory is private to administrators. The public catalog is a
-    // separate projection and deliberately omits exact stock counts.
+    // Admin data is accessed only through callable Functions, which recheck the
+    // current Auth user record. Firestore rules cannot notice a revoked custom
+    // claim until a cached ID token refreshes, so block all direct client access.
     match /products/{productId} {
-      allow get, list: if isAdmin();
-      allow create, update, delete: if false;
+      allow read, write: if false;
     }
 
     match /catalog/{productId} {
-      allow get, list: if true;
+      // The migration gates list access until every document is sanitized.
+      // Rules cannot redact fields from query results; trusted writers therefore
+      // replace this document with the known public projection on every change.
+      allow get, list: if publicCatalogReady()
+        && resource.data.active == true
+        && resource.data.keys().hasOnly([
+          'name', 'category', 'price', 'unit', 'emoji', 'image', 'imageAlt',
+          'imageSource', 'color', 'badge', 'active', 'inStock',
+          'seasonalAvailability', 'updatedAt'
+        ]);
       allow create, update, delete: if false;
     }
 
     // Customer contact and address data is private. Admin UI reads orders via
     // privileged callable functions; direct client writes are never allowed.
     match /orders/{orderId} {
-      allow get, list: if isAdmin();
-      allow create, update, delete: if false;
+      allow read, write: if false;
     }
 
     // Default-deny everything else, including customer profile collections.

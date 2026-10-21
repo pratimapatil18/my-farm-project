@@ -10,18 +10,17 @@ const [action, emailArg] = args.filter(arg => arg !== "--emulator");
 const email = typeof emailArg === "string" ? emailArg.trim().toLowerCase() : "";
 
 async function main() {
+  if (!emulatorMode || args.length !== 3 || args.some(arg => arg.startsWith("-") && arg !== "--emulator")) {
+    throw new Error("Admin claim changes are emulator-only. Usage: node scripts/admin-claim.cjs <grant|revoke> <admin-email> --emulator");
+  }
   if (!["grant", "revoke"].includes(action) || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new Error("Usage: node scripts/admin-claim.cjs <grant|revoke> <admin-email>");
+    throw new Error("Usage: node scripts/admin-claim.cjs <grant|revoke> <admin-email> --emulator");
   }
-  if (emulatorMode) {
-    const configuredHost = process.env.FIREBASE_AUTH_EMULATOR_HOST;
-    if (configuredHost && configuredHost !== "127.0.0.1:9099") {
-      throw new Error("Refusing emulator mode because FIREBASE_AUTH_EMULATOR_HOST is not 127.0.0.1:9099.");
-    }
-    process.env.FIREBASE_AUTH_EMULATOR_HOST = "127.0.0.1:9099";
-  } else if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    console.warn("This uses Application Default Credentials. Run gcloud auth application-default login first. Never put a service-account key in the website.");
+  const configuredHost = process.env.FIREBASE_AUTH_EMULATOR_HOST;
+  if (configuredHost && configuredHost !== "127.0.0.1:9099") {
+    throw new Error("Refusing to continue because FIREBASE_AUTH_EMULATOR_HOST is not 127.0.0.1:9099.");
   }
+  process.env.FIREBASE_AUTH_EMULATOR_HOST = "127.0.0.1:9099";
   initializeApp({projectId});
   const auth = getAuth();
   const user = await auth.getUserByEmail(email);

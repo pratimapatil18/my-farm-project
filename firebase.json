@@ -1,7 +1,17 @@
 {
   "functions": {
     "source": "functions",
-    "runtime": "nodejs20"
+    "runtime": "nodejs20",
+    "ignore": [
+      ".git",
+      ".runtimeconfig.json",
+      "firebase-debug.log",
+      "firebase-debug.*.log",
+      "firestore-debug.log",
+      "node_modules",
+      "my-farm-project/**",
+      "**/.git/**"
+    ]
   },
   "firestore": {
     "database": "(default)",
@@ -14,12 +24,25 @@
     "ignore": [
       "firebase.json",
       "firebase.local.json",
+      "README.md",
+      "IMAGE_SOURCES.md",
       "firestore.rules.next",
+      "firestore.rules",
+      "firestore.indexes.json",
       "ADMIN_SECURITY_PLAN.md",
+      "firebase-check.html",
       "tests/**",
       "functions/**",
       "**/.*",
-      "**/node_modules/**"
+      ".git/**",
+      "**/.git/**",
+      ".firebase-cli-config/**",
+      "**/.firebase-cli-config/**",
+      ".firebase/**",
+      "**/.firebase/**",
+      "**/node_modules/**",
+      "**/*.zip",
+      "**/*.log"
     ]
   }
 }
